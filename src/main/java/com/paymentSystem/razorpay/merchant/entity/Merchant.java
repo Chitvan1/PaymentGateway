@@ -33,7 +33,7 @@ public class Merchant {
     private BusinessType businessType;
 
     @Column(length=100)
-    private String business_name;
+    private String businessName;
 
     @Column(length=200)
     private String websiteUrl;
