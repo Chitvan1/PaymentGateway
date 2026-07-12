@@ -3,11 +3,10 @@ package com.paymentSystem.razorpay.common.exceptions;
 import lombok.Getter;
 
 @Getter
-public class DuplicateResourceException extends RuntimeException{
-
+public class BusinessRuleViolationException extends  RuntimeException{
     private final String errorCode;
 
-    public DuplicateResourceException(String errorCode, String message) {
+    public BusinessRuleViolationException(String errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
     }
