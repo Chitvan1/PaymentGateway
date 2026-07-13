@@ -7,6 +7,7 @@ import com.paymentSystem.razorpay.merchant.dto.request.MerchantSignupRequest;
 import com.paymentSystem.razorpay.merchant.dto.response.MerchantResponse;
 import com.paymentSystem.razorpay.merchant.entity.AppUser;
 import com.paymentSystem.razorpay.merchant.entity.Merchant;
+import com.paymentSystem.razorpay.merchant.mapper.MerchantMapper;
 import com.paymentSystem.razorpay.merchant.repository.AppUserRepository;
 import com.paymentSystem.razorpay.merchant.repository.MerchantRepository;
 import com.paymentSystem.razorpay.merchant.service.AuthService;
@@ -22,6 +23,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final AppUserRepository appUserRepository;
     private final MerchantRepository merchantRepository;
+    private final MerchantMapper  merchantMapper;
 
     @Override
     @Transactional
@@ -29,14 +31,8 @@ public class AuthServiceImpl implements AuthService {
         if(merchantRepository.existsByEmail(request.email())){
             throw new DuplicateResourceException("DUPLICATE_MERCHANT_EMAIL", "Merchant with email already exists: "+request.email());
         }
-        Merchant merchant = Merchant.builder()
-                .name(request.name())
-                .email(request.email())
-                .businessName(request.businessName())
-                .businessType(request.businessType())
-                .status(MerchantStatus.PENDING_KYC)
-                .build();
-
+        Merchant merchant = merchantMapper.toEntityFromSignUpRequest(request);
+        merchant.setStatus(MerchantStatus.PENDING_KYC);
         merchant =  merchantRepository.save(merchant);
 
         AppUser appUser = AppUser.builder()
@@ -47,6 +43,7 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         appUserRepository.save(appUser);
-        return new MerchantResponse(merchant.getId(), merchant.getEmail(), merchant.getName(), merchant.getBusinessName(), merchant.getBusinessType(), merchant.getStatus());
+        return merchantMapper.toResponse(merchant);
+
     }
 }

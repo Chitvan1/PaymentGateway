@@ -28,7 +28,7 @@ public class Payment {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="order_id", nullable=false)
-    private OrderRecord orderRecord;
+    private OrderRecord order;
 
     @Column(name="merchant_id", nullable=false)
     private UUID merchantId;
@@ -69,14 +69,4 @@ public class Payment {
     private LocalDateTime refundedAt;
 
     private LocalDateTime settledAt;
-
-
-
-
-
-
-
-
-
-
 }

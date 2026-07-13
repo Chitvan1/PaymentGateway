@@ -12,6 +12,4 @@ public interface OrderService {
     OrderResponse getById(UUID merchantId, UUID orderId);
     OrderResponse cancel(UUID merchantId, UUID orderId);
     List<PaymentResponse> listsPayments(UUID merchantId, UUID orderId);
-
-
 }

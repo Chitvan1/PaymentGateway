@@ -18,7 +18,6 @@ import java.util.UUID;
 @RequestMapping("/v1/orders")
 @RequiredArgsConstructor
 public class OrderController {
-
     private final OrderService orderService;
 
     UUID merchantId = UUID.fromString("2fb39aed-ef70-466f-8c89-e519073a0e03");//TODO: Replace it with merchant context
@@ -27,5 +26,4 @@ public class OrderController {
     public ResponseEntity<OrderResponse> create(@RequestBody @Valid  CreateOrderRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(merchantId,request));
     }
-
 }

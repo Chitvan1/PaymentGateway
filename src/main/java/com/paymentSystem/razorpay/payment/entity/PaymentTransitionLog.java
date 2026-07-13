@@ -46,6 +46,4 @@ public class PaymentTransitionLog {
 
     @Column(name="occurred_at", nullable = false)
     private LocalDateTime occurredAt;
-
-
 }
