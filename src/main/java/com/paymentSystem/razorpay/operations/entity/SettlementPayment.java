@@ -1,5 +1,6 @@
 package com.paymentSystem.razorpay.operations.entity;
 
+import com.paymentSystem.razorpay.common.entity.BaseEntity;
 import com.paymentSystem.razorpay.payment.entity.Payment;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
