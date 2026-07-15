@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name="settlement_payment")
-public class SettlementPayment{
+public class SettlementPayment extends BaseEntity{
 
     @EmbeddedId
     private SettlementPaymentId id;
