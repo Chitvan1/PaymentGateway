@@ -22,25 +22,29 @@ public class NetBankingAdapter implements PaymentAdapter {
     @Override
     public PaymentResult initiate(PaymentRequest request){
         log.info("Initiate Payment with NetBankingAdapter, paymentId: {} " +request.paymentId());
-        PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(
-                request.paymentId(),
-                PaymentMethods.NETBANKING,
-                request.amount(),
-                request.methodDetails()
-        );
 
-        PaymentProcessorResponse paymentProcessorResponse = paymentProcessorRouter.
-                charge(paymentProcessorRequest);
+        try {
+            PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(
+                    request.paymentId(),
+                    PaymentMethods.NETBANKING,
+                    request.amount(),
+                    request.methodDetails()
+            );
 
-        return switch (paymentProcessorResponse) {
-            case PaymentProcessorResponse.Failure failure -> new PaymentResult.
-                    Failure(failure.errorCode(), failure.errorDescription());
-            case PaymentProcessorResponse.Pending pending -> new PaymentResult.
-                    Pending(pending.processorReference());
-            case PaymentProcessorResponse.Success success -> new PaymentResult.
-                    Success(success.processorReference());
+            PaymentProcessorResponse paymentProcessorResponse = paymentProcessorRouter.
+                    charge(paymentProcessorRequest);
 
-
-        };
+            return switch (paymentProcessorResponse) {
+                case PaymentProcessorResponse.Failure failure -> new PaymentResult.
+                        Failure(failure.errorCode(), failure.errorDescription());
+                case PaymentProcessorResponse.Pending pending -> new PaymentResult.
+                        Pending(pending.processorReference());
+                case PaymentProcessorResponse.Success success -> new PaymentResult.
+                        Success(success.processorReference());
+            };
+        }catch (Exception e){
+            log.warn("NetBanking failed, paymentId: {} ", request.paymentId());
+            return new PaymentResult.Failure("NBK_FAILED", e.getMessage());
+        }
     }
 }
