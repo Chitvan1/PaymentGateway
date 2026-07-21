@@ -64,13 +64,18 @@ public class PaymentServiceImpl implements PaymentService {
 
         PaymentResult result = paymentGatewayRouter.initiate(paymentRequest);
 
-        if(result instanceof PaymentResult.Pending(
-                String registrationRef
-        )) payment.setProcessorReference(registrationRef);
-        else if(result instanceof PaymentResult.Failure(String errorCode, String errorDescription)){
-            payment.setStatus(PaymentStatus.FAILED);
-            payment.setErrorCode(errorCode);
-            payment.setErrorDescription(errorDescription);
+        switch (result) {
+            case PaymentResult.Pending(
+                    String registrationRef
+            ) -> payment.setProcessorReference(registrationRef);
+            case PaymentResult.Failure(String errorCode, String errorDescription) -> {
+                payment.setStatus(PaymentStatus.FAILED);
+                payment.setErrorCode(errorCode);
+                payment.setErrorDescription(errorDescription);
+            }
+            case PaymentResult.Success success -> {}
+            case null, default -> {
+            }
         }
         payment = paymentRepository.save(payment);
         orderRepository.save(order);

@@ -16,13 +16,15 @@ import java.util.Map;
 public class PaymentAdapterConfig{
 
     private final NetBankingAdapter netBankingAdapter;
+    private final CardPaymentAdapter cardPaymentAdapter;
+    private final UpiPaymentAdapter upiPaymentAdapter;
 
     @Bean
     public Map<PaymentMethods, PaymentAdapter> paymentAdapterMap(){
         return Map.of(
-                PaymentMethods.CARD, new CardPaymentAdapter(),
+                PaymentMethods.CARD, cardPaymentAdapter,
                 PaymentMethods.NETBANKING, netBankingAdapter,
-                PaymentMethods.UPI, new UpiPaymentAdapter()
+                PaymentMethods.UPI, upiPaymentAdapter
         );
     }
 }
