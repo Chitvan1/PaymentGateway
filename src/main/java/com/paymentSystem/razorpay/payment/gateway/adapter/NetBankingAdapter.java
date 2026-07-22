@@ -4,13 +4,14 @@ import com.paymentSystem.razorpay.common.enums.PaymentMethods;
 import com.paymentSystem.razorpay.payment.gateway.PaymentAdapter;
 import com.paymentSystem.razorpay.payment.gateway.dto.PaymentRequest;
 import com.paymentSystem.razorpay.payment.gateway.dto.PaymentResult;
-import com.paymentSystem.razorpay.payment.processor.PaymentProcessor;
 import com.paymentSystem.razorpay.payment.processor.PaymentProcessorRouter;
 import com.paymentSystem.razorpay.payment.processor.dto.PaymentProcessorRequest;
 import com.paymentSystem.razorpay.payment.processor.dto.PaymentProcessorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -46,5 +47,10 @@ public class NetBankingAdapter implements PaymentAdapter {
             log.warn("NetBanking failed, paymentId: {} ", request.paymentId());
             return new PaymentResult.Failure("NBK_FAILED", e.getMessage());
         }
+    }
+
+    @Override
+    public PaymentResult capture(UUID paymentId) {
+        return new PaymentResult.Success("NBK_REF");
     }
 }

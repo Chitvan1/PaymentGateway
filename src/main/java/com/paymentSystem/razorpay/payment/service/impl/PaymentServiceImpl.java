@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -79,6 +80,28 @@ public class PaymentServiceImpl implements PaymentService {
         }
         payment = paymentRepository.save(payment);
         orderRepository.save(order);
+        return paymentMapper.toResponse(payment);
+    }
+
+    @Override
+    public PaymentResponse capture(UUID merchantId, UUID paymentId) {
+        Payment payment = paymentRepository.findByIdAndMerchantId(paymentId, merchantId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId.toString()));
+
+        payment.setStatus(PaymentStatus.CAPTURING); //TODO: Proper state machine
+        PaymentResult paymentResult = paymentGatewayRouter.capture(payment.getPaymentMethod(),paymentId);
+
+        if(paymentResult instanceof PaymentResult.Success success){
+                payment.setStatus(PaymentStatus.CAPTURED);
+                payment.setCapturedAt(LocalDateTime.now());
+                log.info("Payment captured, paymentID: {} "+paymentId.toString());
+        }else if(paymentResult instanceof PaymentResult.Failure(String errorCode, String errorDescription)){
+                payment.setStatus(PaymentStatus.AUTHORIZED);
+                payment.setErrorCode(errorCode);
+                payment.setErrorDescription(errorDescription);
+                log.warn("Payment captured failed, paymentID: {} "+paymentId.toString());
+        }
+        payment = paymentRepository.save(payment);
         return paymentMapper.toResponse(payment);
     }
 }
