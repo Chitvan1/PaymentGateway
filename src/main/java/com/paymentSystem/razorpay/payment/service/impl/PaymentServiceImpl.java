@@ -1,6 +1,7 @@
 package com.paymentSystem.razorpay.payment.service.impl;
 
 import com.paymentSystem.razorpay.common.enums.OrderStatus;
+import com.paymentSystem.razorpay.common.enums.PaymentEvent;
 import com.paymentSystem.razorpay.common.enums.PaymentStatus;
 import com.paymentSystem.razorpay.common.exceptions.BusinessRuleViolationException;
 import com.paymentSystem.razorpay.common.exceptions.ResourceNotFoundException;
@@ -15,6 +16,7 @@ import com.paymentSystem.razorpay.payment.mapper.PaymentMapper;
 import com.paymentSystem.razorpay.payment.repository.OrderRepository;
 import com.paymentSystem.razorpay.payment.repository.PaymentRepository;
 import com.paymentSystem.razorpay.payment.service.PaymentService;
+import com.paymentSystem.razorpay.payment.statemachine.PaymentTransitionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentGatewayRouter paymentGatewayRouter;
     private final PaymentMapper paymentMapper;
+    private  final PaymentTransitionService paymentTransitionService;
 
     @Override
     @Transactional
@@ -70,7 +73,8 @@ public class PaymentServiceImpl implements PaymentService {
                     String registrationRef
             ) -> payment.setProcessorReference(registrationRef);
             case PaymentResult.Failure(String errorCode, String errorDescription) -> {
-                payment.setStatus(PaymentStatus.FAILED);
+//                payment.setStatus(PaymentStatus.FAILED);
+                paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAILURE);
                 payment.setErrorCode(errorCode);
                 payment.setErrorDescription(errorDescription);
             }
@@ -80,6 +84,9 @@ public class PaymentServiceImpl implements PaymentService {
         }
         payment = paymentRepository.save(payment);
         orderRepository.save(order);
+
+        //TODO: Send an outbox (Kafka event)
+
         return paymentMapper.toResponse(payment);
     }
 
@@ -89,19 +96,24 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId.toString()));
 
         payment.setStatus(PaymentStatus.CAPTURING); //TODO: Proper state machine
+        paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAILURE);
         PaymentResult paymentResult = paymentGatewayRouter.capture(payment.getPaymentMethod(),paymentId);
 
         if(paymentResult instanceof PaymentResult.Success success){
                 payment.setStatus(PaymentStatus.CAPTURED);
+                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_SUCCESS);
                 payment.setCapturedAt(LocalDateTime.now());
                 log.info("Payment captured, paymentID: {} "+paymentId.toString());
         }else if(paymentResult instanceof PaymentResult.Failure(String errorCode, String errorDescription)){
-                payment.setStatus(PaymentStatus.AUTHORIZED);
+                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAILURE);
                 payment.setErrorCode(errorCode);
                 payment.setErrorDescription(errorDescription);
                 log.warn("Payment captured failed, paymentID: {} "+paymentId.toString());
         }
         payment = paymentRepository.save(payment);
+
+        //TODO: Send an outbox (Kafka event)
+
         return paymentMapper.toResponse(payment);
     }
 }
