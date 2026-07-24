@@ -1,5 +1,6 @@
 package com.paymentSystem.razorpay.vault.dto.request;
 
+import com.paymentSystem.razorpay.vault.validation.ExpiryYear;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.LuhnCheck;
 
@@ -21,7 +22,7 @@ public record TokenizeRequest(
         Integer expiryMonth,
 
         @NotNull(message = "Expiry year is required")
-        @Min(value = 2026)
+        @ExpiryYear
         Integer expiryYear,
 
         UUID customerId,

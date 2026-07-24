@@ -4,6 +4,7 @@ import com.paymentSystem.razorpay.common.enums.PaymentMethods;
 import com.paymentSystem.razorpay.payment.processor.PaymentProcessor;
 import com.paymentSystem.razorpay.payment.processor.strategy.CardPaymentProcessor;
 import com.paymentSystem.razorpay.payment.processor.strategy.NetBankingPaymentProcessor;
+import com.paymentSystem.razorpay.payment.processor.strategy.UpiPaymentProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
