@@ -99,16 +99,18 @@ public class PaymentServiceImpl implements PaymentService {
         paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAILURE);
         PaymentResult paymentResult = paymentGatewayRouter.capture(payment.getPaymentMethod(),paymentId);
 
-        if(paymentResult instanceof PaymentResult.Success success){
-                payment.setStatus(PaymentStatus.CAPTURED);
-                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_SUCCESS);
-                payment.setCapturedAt(LocalDateTime.now());
-                log.info("Payment captured, paymentID: {} "+paymentId.toString());
-        }else if(paymentResult instanceof PaymentResult.Failure(String errorCode, String errorDescription)){
-                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAILURE);
-                payment.setErrorCode(errorCode);
-                payment.setErrorDescription(errorDescription);
-                log.warn("Payment captured failed, paymentID: {} "+paymentId.toString());
+        switch (paymentResult) {
+            case PaymentResult.Pending pending -> payment.setProcessorReference(pending.registrationRef());
+            case PaymentResult.Failure failure -> {
+//                payment.setStatus(PaymentStatus.FAILED);
+                paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAILURE);
+                payment.setErrorCode(failure.errorCode());
+                payment.setErrorDescription(failure.errorDescription());
+            }
+            case PaymentResult.Success success -> {
+                log.warn("Invalid state");
+                return null;
+            }
         }
         payment = paymentRepository.save(payment);
 
