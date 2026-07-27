@@ -66,20 +66,21 @@ public class PaymentServiceImpl implements PaymentService {
                 request.method(),
                 request.methodDetails());
 
+        paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_ATTEMPT);
         PaymentResult result = paymentGatewayRouter.initiate(paymentRequest);
 
         switch (result) {
-            case PaymentResult.Pending(
-                    String registrationRef
-            ) -> payment.setProcessorReference(registrationRef);
+            case PaymentResult.Pending(String registrationRef) ->
+                    payment.setProcessorReference(registrationRef);
             case PaymentResult.Failure(String errorCode, String errorDescription) -> {
 //                payment.setStatus(PaymentStatus.FAILED);
                 paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAILURE);
                 payment.setErrorCode(errorCode);
                 payment.setErrorDescription(errorDescription);
             }
-            case PaymentResult.Success success -> {}
-            case null, default -> {
+            case PaymentResult.Success success -> {
+                log.warn("Invalid State");
+                return null;
             }
         }
         payment = paymentRepository.save(payment);
@@ -117,5 +118,50 @@ public class PaymentServiceImpl implements PaymentService {
         //TODO: Send an outbox (Kafka event)
 
         return paymentMapper.toResponse(payment);
+    }
+
+    @Override
+    @Transactional
+    public void resolveAuthorization(UUID paymentId, boolean approve,
+                                     String bankRef, String errorCode, String errorDescription) {
+
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment", paymentId));
+
+        if (payment.getStatus() != PaymentStatus.AUTHORIZING) {
+            log.warn("Payment is not in Authorizing state, paymentID: {}, status: {}", paymentId, payment.getStatus());
+            return;
+        }
+
+        OrderRecord orderRecord = payment.getOrder();
+
+        if (approve) {
+            paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_SUCCESS);
+            payment.setBankReferenceNumber(bankRef);
+            payment.setAuthorizedAt(LocalDateTime.now());
+
+            // Auto-capture
+            paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_REQUEST);
+            PaymentResult captureResult = paymentGatewayRouter.capture(payment.getPaymentMethod(), paymentId);
+
+            if(captureResult instanceof PaymentResult.Success success) {
+                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_SUCCESS);
+                payment.setCapturedAt(LocalDateTime.now());
+                orderRecord.setOrderStatus(OrderStatus.PAID);
+            } else if (captureResult instanceof  PaymentResult.Failure failure){
+                paymentTransitionService.apply(payment, PaymentEvent.CAPTURE_FAILURE);
+                payment.setErrorCode(failure.errorCode());
+                payment.setErrorDescription(failure.errorDescription());
+            }
+        } else {
+            paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAILURE);
+            payment.setErrorCode(errorCode);
+            payment.setErrorDescription(errorDescription);
+        }
+
+        paymentRepository.save(payment);
+        orderRepository.save(orderRecord);
+
+        // TODO: send an outbox (kafka event)
     }
 }
