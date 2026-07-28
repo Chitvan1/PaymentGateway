@@ -6,6 +6,4 @@ public  enum ChaosMode {
     FAILURE,
     SUCCESS,
     TIMEOUT
-
-
 }

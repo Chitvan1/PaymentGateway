@@ -51,7 +51,7 @@ public class BankCallbackSimulator {
             switch (chaosMode){
                 case SUCCESS ->  resolve(payment, true);
                 case FAILURE ->  resolve(payment, false);
-                case NORMAL -> resolve(payment, shouldApprove(payment, methodConfig));
+                case NORMAL, SLOW -> resolve(payment, shouldApprove(payment, methodConfig));
                 case TIMEOUT -> {
                     log.debug("BankCallback simulator: Payment Timed out");
                 }
