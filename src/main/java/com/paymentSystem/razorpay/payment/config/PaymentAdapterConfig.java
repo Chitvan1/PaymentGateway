@@ -1,4 +1,4 @@
-package com.paymentSystem.razorpay.common.config;
+package com.paymentSystem.razorpay.payment.config;
 
 import com.paymentSystem.razorpay.common.enums.PaymentMethods;
 import com.paymentSystem.razorpay.payment.gateway.PaymentAdapter;
