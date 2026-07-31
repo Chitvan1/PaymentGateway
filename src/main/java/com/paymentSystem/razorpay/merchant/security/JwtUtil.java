@@ -42,6 +42,8 @@ public class JwtUtil {
                 .getPayload();
 
     }
-
+    public String extractRole(Claims claims){
+        return claims.get("role", String.class);
+    }
 
 }
