@@ -87,10 +87,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     private boolean secretMatches(String rawSecret, ApiKey apiKey) {
         if(bCryptPasswordEncoder.matches(rawSecret, apiKey.getKeySecretHash())) return true;
 
-        boolean isInGracePeriod = apiKey.getGracePeriodExpiresAt() != null
-                && LocalDateTime.now().isBefore(apiKey.getGracePeriodExpiresAt());
-
-        return isInGracePeriod
+        return apiKey.isInGracePeriod()
                 && apiKey.getPreviousKeySecretHash() != null
                 && bCryptPasswordEncoder.matches(rawSecret, apiKey.getPreviousKeySecretHash());
     }
