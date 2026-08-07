@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/orders")
 @RequiredArgsConstructor
 public class OrderController {
-    private final OrderService orderService;
+
     private final MerchantContext merchantContext;
 
+    private final OrderService orderService;
+
     @PostMapping
-    public ResponseEntity<OrderResponse> create(@RequestBody @Valid  CreateOrderRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.create(merchantContext.getMerchantId(),request));
+    public ResponseEntity<OrderResponse> create(@RequestBody @Valid CreateOrderRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(orderService.create(merchantContext.getMerchantId(), request));
     }
 }
