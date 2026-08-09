@@ -8,7 +8,7 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface OrderMapper {
-    @Mapping(source = "amount", target = "money")
-    @Mapping(source = "orderStatus", target = "status")
+//    @Mapping(source = "amount", target = "money")
+//    @Mapping(source = "orderStatus", target = "status")
     OrderResponse toResponse(OrderRecord orderRecord);
 }
