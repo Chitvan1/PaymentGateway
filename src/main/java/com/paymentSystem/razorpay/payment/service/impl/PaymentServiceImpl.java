@@ -37,7 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
     private  final PaymentTransitionService paymentTransitionService;
 
     @Override
-    @Transactional
+    @Transactional()
     public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request) {
         OrderRecord order = orderRepository.findByIdAndMerchantId(request.orderId(), merchantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", request.orderId()));

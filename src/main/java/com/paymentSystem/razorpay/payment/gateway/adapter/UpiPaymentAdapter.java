@@ -22,7 +22,7 @@ public class UpiPaymentAdapter implements PaymentAdapter {
 
     @Override
     public PaymentResult initiate(PaymentRequest  request) {
-        log.info("Initiate Payment with UPI, paymentId: {} " +request.paymentId());
+        log.info("Initiate Payment with UPI, paymentId: {}", request.paymentId());
 
         try {
             PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(

@@ -39,9 +39,9 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     @Override
     @Transactional
     public ApiKeyCreateResponse create(UUID merchantId, CreateApiKeyRequest request) {
-          Merchant merchant = merchantRepository.findById(merchantId).orElseThrow(
-                  ()-> new ResourceNotFoundException("merchant", merchantId)
-          );
+          Merchant merchant = merchantRepository.findById(merchantId)
+		  
+		  		.orElseThrow(()-> new ResourceNotFoundException("merchant", merchantId));
 
           String keyId = "rzp_"+request.environment().name().toLowerCase()+"_"+ RandomizerUtil.randomBase64(24);
           String rawSecret = RandomizerUtil.randomBase64(45);
@@ -67,7 +67,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     public void revoke(UUID merchantId, UUID keyId) {
         ApiKey key = apiKeyRepository.findById(keyId)
                 .filter(k -> k.getMerchant().getId().equals(merchantId))
-                .orElseThrow(() -> new ResourceNotFoundException("Apikey", keyId));
+                .orElseThrow(() -> new ResourceNotFoundException("ApiKey", keyId));
 
         key.setEnabled(false);
         apiKeyCache.evict(key.getKeyId());
@@ -78,7 +78,7 @@ public class ApiKeyServiceImpl implements ApiKeyService {
     public @Nullable  ApiKeyCreateResponse rotate(UUID merchantId, UUID keyId) {
         ApiKey apiKey = apiKeyRepository.findById(keyId)
                 .filter(k -> k.getMerchant().getId().equals(merchantId))
-                .orElseThrow(() -> new ResourceNotFoundException("Apikey", keyId));
+                .orElseThrow(() -> new ResourceNotFoundException("ApiKey", keyId));
 
         if(!apiKey.isEnabled()) {
             throw new RuntimeException("Cannot rotate a disabled key");

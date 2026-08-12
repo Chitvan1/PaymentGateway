@@ -16,6 +16,7 @@ public class MerchantUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return appUserRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("User","email"));
+		return appUserRepository.findByEmail(email)
+	              .orElseThrow(()-> new ResourceNotFoundException("User",email));
     }
 }

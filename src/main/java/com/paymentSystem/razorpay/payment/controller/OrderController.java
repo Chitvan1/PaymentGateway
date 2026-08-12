@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/orders")
 @RequiredArgsConstructor
-@Slf4j
 public class OrderController {
 
     private final MerchantContext merchantContext;
@@ -26,7 +25,6 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponse> create(@RequestBody @Valid CreateOrderRequest request) {
-        log.info("OrderController.create called for receipt={} merchantId={}", request.receipt(), merchantContext.getMerchantId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.create(merchantContext.getMerchantId(), request));
     }

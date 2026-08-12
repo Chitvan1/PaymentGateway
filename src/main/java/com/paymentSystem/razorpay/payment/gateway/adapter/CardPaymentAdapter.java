@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CardPaymentAdapter implements PaymentAdapter {
 
-    public final VaultService vaultService;
+    private final VaultService vaultService;
 
     @Override
     public PaymentResult initiate(PaymentRequest request){

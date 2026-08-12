@@ -24,7 +24,7 @@ public class WebhookEvent extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String eventType;
 
-    @JdbcTypeCode((SqlTypes.JSON))
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> payload;
 
@@ -35,7 +35,7 @@ public class WebhookEvent extends BaseEntity {
     private String signature;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "status", nullable = false)
     private WebhookEventStatus status;
 
     @Column(nullable = false)

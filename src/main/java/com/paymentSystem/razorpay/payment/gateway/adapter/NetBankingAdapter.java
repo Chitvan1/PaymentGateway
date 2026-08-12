@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component
+@Component("NETBANKING")
 @Slf4j
 @RequiredArgsConstructor
 public class NetBankingAdapter implements PaymentAdapter {
@@ -22,7 +22,7 @@ public class NetBankingAdapter implements PaymentAdapter {
 
     @Override
     public PaymentResult initiate(PaymentRequest request){
-        log.info("Initiate Payment with NetBankingAdapter, paymentId: {} " +request.paymentId());
+        log.info("Initiate Payment with NetBankingAdapter, paymentId: {}", request.paymentId());
 
         try {
             PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.nonCard(

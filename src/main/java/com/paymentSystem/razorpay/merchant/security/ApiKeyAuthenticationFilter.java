@@ -48,7 +48,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        log.info("Incoming request {}", request.getRequestURI());
+        log.info("Incoming request: {}", request.getRequestURI());
         try {
             String header = request.getHeader("Authorization");
 
@@ -56,6 +56,9 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
+
+//        Authorization: Basic key_asdlfjaosduf:secret_asdflauouadf
+//        Authorization: Basic ASDFUAOSJDFLAKSJDFA89SDUFLIJalsdjflakjsdflk==
 
             String[] credentials = decode(header);
             if (credentials == null) {
@@ -65,7 +68,8 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             String keyId = credentials[0];
             String rawSecret = credentials[1];
 
-            ApiKeyCacheEntry apiKeyEntry = apiKeyCache.get(keyId).orElseGet(()-> loadAndCache(keyId));
+            ApiKeyCacheEntry apiKeyEntry = apiKeyCache.get(keyId)
+					.orElseGet(()-> loadAndCache(keyId));
 
             if (apiKeyEntry == null  || !apiKeyEntry.enabled() || !secretMatches(rawSecret, apiKeyEntry)) {
                 throw new BadRequestException("Invalid or Missing API Key");
@@ -74,7 +78,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
             RateLimitResult rateLimitResult = rateLimiter.check("apikey:"+keyId, requestsPerMinute, 60);
 
             if(!rateLimitResult.isAllowed()) {
-                log.warn("Too many requests for key {}", keyId);
+                log.warn("Too many requests keyId={}", keyId);
                 throw new RateLimitException("Too many requests", rateLimitResult.retryAfterSeconds());
             }
 

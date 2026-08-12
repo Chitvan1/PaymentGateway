@@ -20,7 +20,7 @@ public class JwtUtil {
 
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-    };
+    }
 
     public String generateAccessToken(String email, UUID merchantId,String role){
         Instant now = Instant.now();

@@ -2,6 +2,7 @@ package com.paymentSystem.razorpay.payment.repository;
 
 import com.paymentSystem.razorpay.common.enums.PaymentStatus;
 import com.paymentSystem.razorpay.payment.entity.Payment;
+import com.paymentSystem.razorpay.payment.entity.OrderRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
-    List<Payment> findByOrder_Id(UUID orderId);
+    List<Payment> findByOrder_Id(OrderRecord order);
 
     Optional<Payment> findByIdAndMerchantId(UUID paymentId, UUID merchantId);
 

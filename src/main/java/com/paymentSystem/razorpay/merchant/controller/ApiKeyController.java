@@ -25,9 +25,9 @@ public class ApiKeyController {
 
     @PostMapping
     public ResponseEntity<ApiKeyCreateResponse> create(@Valid @RequestBody CreateApiKeyRequest request){
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                    apiKeyService.create(merchantContext.getMerchantId(),request)
-            );
+            return ResponseEntity.status(HttpStatus.CREATED)
+			
+			.body(apiKeyService.create(merchantContext.getMerchantId(),request)            );
     }
 
     @GetMapping

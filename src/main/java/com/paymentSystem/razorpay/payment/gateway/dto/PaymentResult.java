@@ -4,5 +4,5 @@ public sealed interface PaymentResult permits PaymentResult.Pending, PaymentResu
 
     record Pending(String registrationRef) implements PaymentResult{}
     record Failure(String errorCode, String errorDescription) implements PaymentResult{}
-    record Success(String bankReference) implements PaymentResult{};
+    record Success(String bankReference) implements PaymentResult{}
 }
