@@ -3,7 +3,11 @@ package com.paymentSystem.razorpay.common.ratelimit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -27,10 +31,19 @@ public class SlidingWindowRateLimiter implements RateLimiter {
         long current = count != null ? count : 0;
 
         if(current >= maxRequestAllowed) {
-
-            return RateLimitResult.denied();
+            var oldest = zset.rangeWithScores(redisKey, 0, 0);
+            int retryAfter = 1;
+            if((oldest != null  && !oldest.isEmpty())){
+                Double oldestScore = oldest.iterator().next().getScore();
+                if(oldestScore != null){
+                    long windowExpiresMs = oldestScore.longValue() + windowSeconds * 1000;
+                    retryAfter = (int) Math.ceil((windowExpiresMs - nowMs) / 1000.0);
+                }
+            }
+            return RateLimitResult.denied(retryAfter);
         }
-
-        return null;
+        zset.add(redisKey, UUID.randomUUID().toString(), nowMs);
+        redis.expire(redisKey, Duration.ofSeconds(windowSeconds + 1));
+        return RateLimitResult.allowed((int) (maxRequestAllowed - current - 1));
     }
 }
