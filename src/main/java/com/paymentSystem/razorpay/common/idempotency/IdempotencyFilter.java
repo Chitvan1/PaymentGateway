@@ -1,5 +1,6 @@
 package com.paymentSystem.razorpay.common.idempotency;
 
+import com.paymentSystem.razorpay.merchant.security.MerchantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,14 +12,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class idempotencyFilter extends OncePerRequestFilter {
+public class IdempotencyFilter extends OncePerRequestFilter {
 
     private static final Set<String> GUARDED_METHODS = Set.of("POST", "PUT", "PATCH");
+    private final MerchantContext merchantContext;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -35,9 +38,8 @@ public class idempotencyFilter extends OncePerRequestFilter {
             return;
         }
 
-
-
-
+        UUID merchantId = merchantContext.getMerchantId();
+        String key = merchantId != null ? merchantId+":"+rawKey : rawKey;
 
     }
 }
