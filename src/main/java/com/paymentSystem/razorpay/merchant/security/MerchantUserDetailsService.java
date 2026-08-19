@@ -1,6 +1,5 @@
 package com.paymentSystem.razorpay.merchant.security;
 
-import com.paymentSystem.razorpay.common.exceptions.ResourceNotFoundException;
 import com.paymentSystem.razorpay.merchant.repository.AppUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +15,7 @@ public class MerchantUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-		return appUserRepository.findByEmail(email)
-	              .orElseThrow(()-> new ResourceNotFoundException("User",email));
+        return appUserRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
     }
 }
